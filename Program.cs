@@ -42,6 +42,6 @@ public class StringProcessor
         string userInput = Console.ReadLine();
         string result = ProcessString(userInput);
         Console.WriteLine("Результат: " + result);
-        Console.ReadKey();
+        Console.ReadLine();
     }
 }
