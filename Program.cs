@@ -1,12 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class StringProcessor
 {
+    public static List<char> InvalidCharsCheck(string input)
+    {
+        var invalidChars = new List<char>();
+        foreach (char c in input)
+        {
+            if (c < 'a' || c > 'z')
+            {
+                invalidChars.Add(c);
+            }
+        }
+        return invalidChars;
+    }
+
     public static string ProcessString(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
             return input;
+        }
+
+        var invalidCharacters = InvalidCharsCheck(input);
+        if (invalidCharacters.Count > 0)
+        {
+            return "Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters);
         }
 
         if (input.Length % 2 != 0)
