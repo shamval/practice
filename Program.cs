@@ -16,26 +16,26 @@ public class StringProcessor
         return invalidChars;
     }
 
-    public static string ProcessString(string input)
+    public static (string processedString, Dictionary<char, int> charCount) ProcessString(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
-            return input;
+            return (input, null);
         }
 
         var invalidCharacters = InvalidCharsCheck(input);
         if (invalidCharacters.Count > 0)
         {
-            return "Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters);
+            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null);
         }
 
+        string processedString;
         if (input.Length % 2 != 0)
         {
             // Нечетное количество символов
             char[] charArray = input.ToCharArray();
             Array.Reverse(charArray);
-            string reversedString = new string(charArray);
-            return reversedString + input;
+            processedString = new string(charArray) + input;
         }
         else
         {
@@ -52,16 +52,43 @@ public class StringProcessor
             Array.Reverse(secondHalfArray);
             string reversedSecondHalf = new string(secondHalfArray);
 
-            return reversedFirstHalf + reversedSecondHalf;
+            processedString = reversedFirstHalf + reversedSecondHalf;
         }
+
+        // Подсчет символов
+        var charCount = new Dictionary<char, int>();
+        foreach (char c in processedString)
+        {
+            if (charCount.ContainsKey(c))
+            {
+                charCount[c]++;
+            }
+            else
+            {
+                charCount[c] = 1;
+            }
+        }
+
+        return (processedString, charCount);
     }
 
     public static void Main(string[] args)
     {
         Console.WriteLine("Введите строку:");
         string userInput = Console.ReadLine();
-        string result = ProcessString(userInput);
+        var (result, charCount) = ProcessString(userInput);
+
         Console.WriteLine("Результат: " + result);
+
+        if (charCount != null)
+        {
+            Console.WriteLine("Количество повторений символов:");
+            foreach (var kvp in charCount)
+            {
+                Console.WriteLine($"'{kvp.Key}': {kvp.Value}");
+            }
+        }
+
         Console.ReadLine();
     }
 }
