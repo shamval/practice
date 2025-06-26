@@ -16,17 +16,17 @@ public class StringProcessor
         return invalidChars;
     }
 
-    public static (string processedString, Dictionary<char, int> charCount) ProcessString(string input)
+    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring) ProcessString(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
-            return (input, null);
+            return (input, null, null);
         }
 
         var invalidCharacters = InvalidCharsCheck(input);
         if (invalidCharacters.Count > 0)
         {
-            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null);
+            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null, null);
         }
 
         string processedString;
@@ -69,14 +69,40 @@ public class StringProcessor
             }
         }
 
-        return (processedString, charCount);
+        // Поиск наибольшей подстроки
+        string longestSubstring = FindLongestSubstring(processedString);
+
+        return (processedString, charCount, longestSubstring);
+    }
+
+    private static string FindLongestSubstring(string input)
+    {
+        string vowels = "aeiouy";
+        string longest = string.Empty;
+
+        for (int i = 0; i < input.Length; i++)
+        {
+            for (int j = i + 1; j < input.Length; j++)
+            {
+                if (vowels.Contains(input[i]) && vowels.Contains(input[j]))
+                {
+                    string substring = input.Substring(i, j - i + 1);
+                    if (substring.Length > longest.Length)
+                    {
+                        longest = substring;
+                    }
+                }
+            }
+        }
+
+        return longest;
     }
 
     public static void Main(string[] args)
     {
         Console.WriteLine("Введите строку:");
         string userInput = Console.ReadLine();
-        var (result, charCount) = ProcessString(userInput);
+        var (result, charCount, longestSubstring) = ProcessString(userInput);
 
         Console.WriteLine("Результат: " + result);
 
@@ -87,6 +113,11 @@ public class StringProcessor
             {
                 Console.WriteLine($"'{kvp.Key}': {kvp.Value}");
             }
+        }
+
+        if (longestSubstring != null)
+        {
+            Console.WriteLine("Наибольшая подстрока, начинающаяся и заканчивающаяся на гласную: " + longestSubstring);
         }
 
         Console.ReadLine();
