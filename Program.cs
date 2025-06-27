@@ -16,17 +16,17 @@ public class StringProcessor
         return invalidChars;
     }
 
-    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring) ProcessString(string input)
+    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring, string sortedString) ProcessString(string input, string sortAlgorithm)
     {
         if (string.IsNullOrEmpty(input))
         {
-            return (input, null, null);
+            return (input, null, null, null);
         }
 
         var invalidCharacters = InvalidCharsCheck(input);
         if (invalidCharacters.Count > 0)
         {
-            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null, null);
+            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null, null, null);
         }
 
         string processedString;
@@ -72,7 +72,15 @@ public class StringProcessor
         // Поиск наибольшей подстроки
         string longestSubstring = FindLongestSubstring(processedString);
 
-        return (processedString, charCount, longestSubstring);
+        // Сортировка
+        string sortedString = sortAlgorithm.ToLower() switch
+        {
+            "quicksort" => QuickSort(processedString),
+            "treesort" => TreeSort(processedString),
+            _ => "Ошибка! Неверный алгоритм сортировки."
+        };
+
+        return (processedString, charCount, longestSubstring, sortedString);
     }
 
     private static string FindLongestSubstring(string input)
@@ -98,11 +106,100 @@ public class StringProcessor
         return longest;
     }
 
+    private static string QuickSort(string input)
+    {
+        if (input.Length <= 1)
+            return input;
+
+        char pivot = input[input.Length / 2];
+        string less = string.Empty;
+        string equal = string.Empty;
+        string greater = string.Empty;
+
+        foreach (char c in input)
+        {
+            if (c < pivot)
+                less += c;
+            else if (c == pivot)
+                equal += c;
+            else
+                greater += c;
+        }
+
+        return QuickSort(less) + equal + QuickSort(greater);
+    }
+
+    private static string TreeSort(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+
+        var root = new TreeNode(input[0]);
+
+        foreach (char c in input.Substring(1))
+        {
+            root.Insert(c);
+        }
+
+        return root.InOrderTraversal();
+    }
+
+    private class TreeNode
+    {
+        public char Value;
+        public TreeNode Left;
+        public TreeNode Right;
+
+        public TreeNode(char value)
+        {
+            Value = value;
+        }
+
+        public void Insert(char value)
+        {
+            if (value < Value)
+            {
+                if (Left == null)
+                    Left = new TreeNode(value);
+                else
+                    Left.Insert(value);
+            }
+            else
+            {
+                if (Right == null)
+                    Right = new TreeNode(value);
+                else
+                    Right.Insert(value);
+            }
+        }
+
+        public string InOrderTraversal()
+        {
+            var sortedList = new List<char>();
+            InOrderTraversal(this, sortedList);
+            return new string(sortedList.ToArray());
+        }
+
+        private void InOrderTraversal(TreeNode node, List<char> sortedList)
+        {
+            if (node != null)
+            {
+                InOrderTraversal(node.Left, sortedList);
+                sortedList.Add(node.Value);
+                InOrderTraversal(node.Right, sortedList);
+            }
+        }
+    }
+
     public static void Main(string[] args)
     {
         Console.WriteLine("Введите строку:");
         string userInput = Console.ReadLine();
-        var (result, charCount, longestSubstring) = ProcessString(userInput);
+
+        Console.WriteLine("Выберите алгоритм сортировки (quicksort или treesort):");
+        string choice = Console.ReadLine();
+
+        var (result, charCount, longestSubstring, sortedString) = ProcessString(userInput, choice);
 
         Console.WriteLine("Результат: " + result);
 
@@ -119,6 +216,8 @@ public class StringProcessor
         {
             Console.WriteLine("Наибольшая подстрока, начинающаяся и заканчивающаяся на гласную: " + longestSubstring);
         }
+
+        Console.WriteLine("Отсортированная строка: " + sortedString);
 
         Console.ReadLine();
     }
