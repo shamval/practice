@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 public class StringProcessor
 {
@@ -16,17 +19,17 @@ public class StringProcessor
         return invalidChars;
     }
 
-    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring, string sortedString) ProcessString(string input, string sortAlgorithm)
+    public static async Task<(string processedString, Dictionary<char, int> charCount, string longestSubstring, string sortedString, string finalString, int randomIndex)> ProcessString(string input, string sortAlgorithm)
     {
         if (string.IsNullOrEmpty(input))
         {
-            return (input, null, null, null);
+            return (input, null, null, null, null, -1);
         }
 
         var invalidCharacters = InvalidCharsCheck(input);
         if (invalidCharacters.Count > 0)
         {
-            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null, null, null);
+            return ("Ошибка! Введены неподходящие символы: " + string.Join(", ", invalidCharacters), null, null, null, null, -1);
         }
 
         string processedString;
@@ -80,7 +83,11 @@ public class StringProcessor
             _ => "Ошибка! Неверный алгоритм сортировки."
         };
 
-        return (processedString, charCount, longestSubstring, sortedString);
+        // Получение случайного числа
+        int randomIndex = await GetRandomIndex(processedString.Length);
+        string finalString = RemoveCharacterAtIndex(processedString, randomIndex);
+
+        return (processedString, charCount, longestSubstring, sortedString, finalString, randomIndex);
     }
 
     private static string FindLongestSubstring(string input)
@@ -191,7 +198,26 @@ public class StringProcessor
         }
     }
 
-    public static void Main(string[] args)
+    private static async Task<int> GetRandomIndex(int length)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            string url = "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=" + (length - 1) + "&count=1";
+            var response = await client.GetStringAsync(url);
+            JArray jsonArray = JArray.Parse(response);
+            return (int)jsonArray[0];
+        }
+    }
+
+    private static string RemoveCharacterAtIndex(string input, int index)
+    {
+        if (index < 0 || index >= input.Length)
+            return input;
+
+        return input.Remove(index, 1);
+    }
+
+    public static async Task Main(string[] args)
     {
         Console.WriteLine("Введите строку:");
         string userInput = Console.ReadLine();
@@ -199,7 +225,7 @@ public class StringProcessor
         Console.WriteLine("Выберите алгоритм сортировки (quicksort или treesort):");
         string choice = Console.ReadLine();
 
-        var (result, charCount, longestSubstring, sortedString) = ProcessString(userInput, choice);
+        var (result, charCount, longestSubstring, sortedString, finalString, randomIndex) = await ProcessString(userInput, choice);
 
         Console.WriteLine("Результат: " + result);
 
@@ -218,6 +244,8 @@ public class StringProcessor
         }
 
         Console.WriteLine("Отсортированная строка: " + sortedString);
+        Console.WriteLine($"Случайный индекс для удаления: {randomIndex}");
+        Console.WriteLine("Строка после удаления символа: " + finalString);
 
         Console.ReadLine();
     }
