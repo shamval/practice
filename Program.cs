@@ -16,7 +16,7 @@ public class StringProcessor
         return invalidChars;
     }
 
-    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring, string sortedString) ProcessString(string input, string sortAlgorithm)
+    public static (string processedString, Dictionary<char, int> charCount, string longestSubstring, string sortedString) ProcessString(string input, int choice)
     {
         if (string.IsNullOrEmpty(input))
         {
@@ -73,10 +73,10 @@ public class StringProcessor
         string longestSubstring = FindLongestSubstring(processedString);
 
         // Сортировка
-        string sortedString = sortAlgorithm.ToLower() switch
+        string sortedString = choice switch
         {
-            "quicksort" => QuickSort(processedString),
-            "treesort" => TreeSort(processedString),
+            1 => QuickSort(processedString),
+            2 => TreeSort(processedString),
             _ => "Ошибка! Неверный алгоритм сортировки."
         };
 
@@ -196,8 +196,10 @@ public class StringProcessor
         Console.WriteLine("Введите строку:");
         string userInput = Console.ReadLine();
 
-        Console.WriteLine("Выберите алгоритм сортировки (quicksort или treesort):");
-        string choice = Console.ReadLine();
+        Console.WriteLine("Выберите алгоритм сортировки:");
+        Console.WriteLine("1 - Быстрая сортировка");
+        Console.WriteLine("2 - Сортировка деревом");
+        int choice = int.Parse(Console.ReadLine());
 
         var (result, charCount, longestSubstring, sortedString) = ProcessString(userInput, choice);
 
